@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Tasks - Task Manager</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .task-card { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px; }
+        .task-completed { background-color: #d4edda; }
+        .btn { padding: 8px 12px; margin: 5px; border: none; border-radius: 3px; cursor: pointer; text-decoration: none; display: inline-block; }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-success { background-color: #28a745; color: white; }
+        .btn-danger { background-color: #dc3545; color: white; }
+        .btn-secondary { background-color: #6c757d; color: white; }
+        input[type="text"], textarea { padding: 8px; margin: 5px; border: 1px solid #ddd; border-radius: 3px; width: 300px; }
+        textarea { height: 60px; }
+    </style>
+</head>
+<body>
+    <h1>Tasks for <span th:text="${user.name}">User</span></h1>
+    
+    <a href="/" class="btn btn-secondary">← Back to Users</a>
+    
+    <div>
+        <h2>Add New Task</h2>
+        <form action="/api/tasks" method="post">
+            <input type="hidden" name="userId" th:value="${user.id}">
+            <div>
+                <input type="text" name="title" placeholder="Task Title" required>
+            </div>
+            <div>
+                <textarea name="description" placeholder="Task Description"></textarea>
+            </div>
+            <button type="submit" class="btn btn-success">Add Task</button>
+        </form>
+    </div>
+
+    <div>
+        <h2>Tasks</h2>
+        <div th:if="${tasks.empty}">
+            <p>No tasks found. Add a task to get started.</p>
+        </div>
+        <div th:each="task : ${tasks}" class="task-card" th:classappend="${task.completed} ? 'task-completed' : ''">
+            <h3 th:text="${task.title}">Task Title</h3>
+            <p th:text="${task.description}">Task Description</p>
+            <p><strong>Status:</strong> <span th:text="${task.completed} ? 'Completed' : 'Pending'">Pending</span></p>
+            
+            <form th:action="@{/api/tasks/{id}/status(id=${task.id})}" method="post" style="display: inline;">
+                <input type="hidden" name="_method" value="put">
+                <input type="hidden" name="completed" th:value="${!task.completed}">
+                <button type="submit" class="btn btn-primary" 
+                        th:text="${task.completed} ? 'Mark as Pending' : 'Mark as Completed'">
+                    Toggle Status
+                </button>
+            </form>
+            
+            <form th:action="@{/api/tasks/{id}(id=${task.id})}" method="post" style="display: inline;">
+                <input type="hidden" name="_method" value="delete">
+                <button type="submit" class="btn btn-danger" onclick="return confirm('Are you sure?')">Delete</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>
